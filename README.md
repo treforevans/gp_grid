@@ -9,8 +9,9 @@ pip install tabulate
 pip install GPy # v1.6.1 tested but other versions should work
 ```
 
-# Tutorials
-*Coming soon ...*
+# Tutorials (under construction...)
+* [Gaussian Process Inference on Full Grids](./tutorials/full_grid_tutorial.ipynb): This simple tutorial takes you though performing efficient Gaussian process inference on fully structure grids with no missing observations.
+* [Gaussian Process Inference on Grids with Missing Observations](./tutorials/gappy_grid_tutorial.ipynb): This tutorial considers the general case where the input data is structured on a grid, however, some input response are missing. It will consider multi-output senarios as well as senarios where several input dimensions form a dimension of a grid.
 
 # Citation
 The underlying algorithms are based on the 2018 SDM paper:
