@@ -9,9 +9,6 @@ pip install tabulate
 pip install GPy # v1.6.1 tested but other versions should work
 ```
 
-# Tutorials
-*Coming soon ...*
-
 # Citation
 The underlying algorithms are based on the 2018 SDM paper:
 
