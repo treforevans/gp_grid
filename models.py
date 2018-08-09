@@ -720,7 +720,8 @@ class GPGridRegression(BaseModel):
 class GPGappyRegression(GPGridRegression):
     """ similar to GridRegression but when there are gaps (missing response values) """
 
-    def __init__(self, Xg, Yg, kern_list, noise_var=1., iterative_formulation="FG", preconditioner_rank=0):
+    def __init__(self, Xg, Yg, kern_list, noise_var=1., iterative_formulation="FG", preconditioner_rank=0,
+                 pcg_maxiter=10000, pcg_tol=1e-6):
         """
         Inputs:
             Xg : list of length d
@@ -738,6 +739,9 @@ class GPGappyRegression(GPGridRegression):
                 * 'IG' : ignore gaps formulation
                 See Evans & Nair, "Exploiting Structure for Fast Kernel Learning", 2018
             preconditioner_rank : (int) if > 0 then will use a reduced rank preconditioner
+            pcg_maxiter : (int) max iterations of preconditioned conjugate gradient
+            pcg_tol : (float) convergence tolerance of preconditioned conjugate
+                gradient solver. See `help(scipy.sparse.linalg.cg)'
         """
         # call init of the super method
         super(GPGappyRegression, self).__init__(Xg, Yg, kern_list, noise_var)
@@ -776,7 +780,7 @@ class GPGappyRegression(GPGridRegression):
                 self.preconditioner = None
 
         # set some defaults
-        self.pcg_options = {'maxiter':10000, 'tol':1e-6}
+        self.pcg_options = {'maxiter':int(pcg_maxiter), 'tol':float(pcg_tol)}
         self.MLE_method = 'iterative' # options are {'rank-reduced','iterative'} rank-reduced is one shot while others computes using an iterative pcg solver.
         self.grad_method = 'adjoint'
         self.PG_penalty = 10000 # penalty for the penalize gaps (PG) method (academic only)
@@ -1061,7 +1065,7 @@ class GPGappyRegression(GPGridRegression):
         if info == 0 and counter is not None:
             logger.debug('pcg successfully converged in %d iterations (max_iter=%d)' % (counter.niter,self.pcg_options['maxiter']))
         elif info > 0:
-            logger.critical('pcg convergence to tolerance not achieved. Number of iterations: %d' % info)
+            logger.info('pcg convergence to tolerance not achieved. Number of iterations: %d' % info)
         elif info < 0:
             logger.critical('pcg illegal input or breakdown')
 
@@ -1155,7 +1159,7 @@ class GPGappyRegression(GPGridRegression):
                                           callback=None,
                                           **self.pcg_options)
                 if info > 0:
-                    logger.critical('pcg convergence to tolerance not achieved. Number of iterations: %d' % info)
+                    logger.info('pcg convergence to tolerance not achieved. Number of iterations: %d' % info)
                 elif info < 0:
                     logger.critical('pcg illegal input or breakdown')
             else: # use the rank reduced approximation
