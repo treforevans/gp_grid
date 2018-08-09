@@ -61,7 +61,7 @@ class BaseModel(object):
             return self._log_like
 
 
-    def optimize(self, max_iters=1000, messages=True, use_counter=False, factr=10000000.0, pgtol=1e-05):
+    def optimize(self, max_iters=1000, messages=True, use_counter=False, factr=1e12, pgtol=1e-05):
         """
         maximize the log likelihood
 
@@ -69,7 +69,7 @@ class BaseModel(object):
             max_iters : int
                 maximum number of optimization iterations
             factr, pgtol : lbfgsb convergence criteria, see fmin_l_bfgs_b help for more details
-                use factr of 1e12 for low accuracy, 10 for extremely high accuracy (default 1e7)
+                use factr of 1e12 for low accuracy, 10 for extremely high accuracy
         """
         logger.debug('Beginning MLE to optimize hyperparameters. grad_method=%s' % self.grad_method)
 
@@ -100,12 +100,15 @@ class BaseModel(object):
                 self.parameters = self._counter.backup[1]
                 logger.info('will return best parameter set with log-likelihood = %.4g' % self._counter.backup[0])
         else:
-            logger.info('Function Evals: %d. Exit status: %s' % (f_opt, opt['warnflag']))
+            msg = 'Function Evals: %d. Log-Marginal Likelihood: %.6g.' % (opt['funcalls'], -f_opt)
+            if opt['warnflag'] != 0:
+                msg +=  ' Exit status: %s' % opt['warnflag']
+            logger.info(msg)
             # extract the optimal value and set the parameters to this
             transformed_parameters = self._previous_parameters # the default parameters are the previous ones
             transformed_parameters[free] = x_opt # these are the transformed optimal parameters
             self.parameters = self._untransform_parameters(transformed_parameters) # untransform
-        return opt
+            return opt
 
 
     def checkgrad(self, decimal=3, raise_if_fails=True):
@@ -717,12 +720,27 @@ class GPGridRegression(BaseModel):
 class GPGappyRegression(GPGridRegression):
     """ similar to GridRegression but when there are gaps (missing response values) """
 
-    def __init__(self,*args,**kwargs):
+    def __init__(self, Xg, Yg, kern_list, noise_var=1., iterative_formulation="FG", preconditioner_rank=0):
         """
-        see GridRegression for inputs
+        Inputs:
+            Xg : list of length d
+                each element in X must be the array of points along each dimension of the grid. eg.
+                    X[i].shape = (grid_shape[i], grid_sub_dim[i])
+            Yg : nd_array of responses. eg.
+                    Yg.shape = grid_shape
+            kern_list : list of kerels for each grid dimension.
+                Each sub-kernel must have approriate dimensions:
+                    kernel[i].n_dims = d_grid[i]
+                Ultimately these kernels will be multiplied together.
+            noise_var : see models.Regression
+            iterative_formulation : iterative formulation to use. This can be
+                * 'FG' : fill gaps formulation
+                * 'IG' : ignore gaps formulation
+                See Evans & Nair, "Exploiting Structure for Fast Kernel Learning", 2018
+            preconditioner_rank : (int) if > 0 then will use a reduced rank preconditioner
         """
         # call init of the super method
-        super(GPGappyRegression, self).__init__(*args,**kwargs)
+        super(GPGappyRegression, self).__init__(Xg, Yg, kern_list, noise_var)
 
         # add to dependent attributes
         self.dependent_attributes = np.unique(np.concatenate(
@@ -743,12 +761,23 @@ class GPGappyRegression(GPGridRegression):
         self.W = SelectionMatrix(self.not_gaps)
         self.V = SelectionMatrix(self.gaps)
 
+        # deal with preconditioner and iterative method inputs
+        assert iterative_formulation in ['FG', 'IG', 'PG']
+        self.iterative_formulation = iterative_formulation
+        if self.iterative_formulation == "PG":
+            self.preconditioner = 'wilson'
+            self.n_eigs = None
+        else:
+            assert preconditioner_rank >= 0
+            self.n_eigs = int(preconditioner_rank) # keep the first n_eigs eigenvalues (at most) for the rank-reduced approximation
+            if self.n_eigs > 0:
+                self.preconditioner = 'rank-reduced'
+            else:
+                self.preconditioner = None
+
         # set some defaults
-        self.n_eigs = 1000 # keep the first n_eigs eigenvalues (at most) for the rank-reduced approximation
-        self.preconditioner = 'rank-reduced' # options are {'rank-reduced', None, 'wilson'} (wilson only for PG)
         self.pcg_options = {'maxiter':10000, 'tol':1e-6}
         self.MLE_method = 'iterative' # options are {'rank-reduced','iterative'} rank-reduced is one shot while others computes using an iterative pcg solver.
-        self.iterative_formulation = 'IG' # can be  IG - ignore gaps, FG - fill gaps, PG - penalize gaps
         self.grad_method = 'adjoint'
         self.PG_penalty = 10000 # penalty for the penalize gaps (PG) method (academic only)
         self.FG_precon_shift_frac = 0.5 # position wihin feasible range of the spectral shift for the FG rank-reduced preconditioner
