@@ -360,7 +360,7 @@ class KronMatrix(object):
         p is n_eigs and m is the size of each submatrix in eigs (such that eigs has size m^d).
         """
         assert eigs.ndim == 1, "eigs must be a 1D KronMatrix"
-        assert isinstance(n_eigs, (int,long, np.int32)), "n_eigs=%s must be an integer" % repr(n_eigs)
+        assert isinstance(n_eigs, (int,long, np.integer)), "n_eigs=%s must be an integer" % repr(n_eigs)
         assert n_eigs >= 1, "must use at least 1 eigenvalue"
         assert n_eigs <= eigs.shape[0], "n_eigs is greater then the total number of eigenvalues"
         assert mode == 'largest' or mode == 'smallest'
@@ -427,7 +427,7 @@ class KronMatrix(object):
         """
         assert len(pos) == self.n
         assert np.size(pos[0]) == 1
-        assert isinstance(pos[0], int)
+        assert isinstance(pos[0], (int,np.integer))
         assert self.ndim == 2
         return KronMatrix([self.K[i][:,j].reshape((-1,1)) for i,j in enumerate(pos)])
 
