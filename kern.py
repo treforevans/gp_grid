@@ -3,7 +3,6 @@ import numpy as np
 from numpy import pi
 from itertools import product
 import logging
-import GPy.kern
 from copy import deepcopy
 logger = logging.getLogger(__name__)
 from pdb import set_trace
@@ -141,14 +140,11 @@ class BaseKernel(object):
         elif isinstance(self, DirectCovariance): # then print in a custom way
             formatter = {'float_kind':lambda x: '%5.2f'%x, 'str_kind':lambda x: "{:<5}".format(x)}
             s += "L:\n"
-            #s += np.array2string(a=self.L, max_line_width=np.inf, formatter=formatter)
-            s += str(self.L) # for some reason the above isn't working
+            s += str(self.L)
             s += '\n'
-            #s += np.array2string(a=self.constraint_map['L'], max_line_width=np.inf, formatter=formatter)
-            s += str(self.constraint_map['L']) # for some reason the above isn't working
+            s += str(self.constraint_map['L'])
             s += '\nK:\n'
-            #s += np.array2string(a=self.L.dot(self.L.T), max_line_width=np.inf, formatter=formatter)
-            s += str(self.L.dot(self.L.T)) # for some reason the above isn't working
+            s += str(self.L.dot(self.L.T))
         else: # tabulate the reuslts
             s += str(tabulate([[name, getattr(self, name), self.constraint_map[name]] for name in self.parameter_list],
                               headers=['Name', 'Value', 'Constraint'], tablefmt='orgtbl'))
@@ -177,6 +173,7 @@ class GPyKernel(BaseKernel):
                 name of the kernel in gpy OR GPy kernel object. If the latter then nothing else afterwards should be specified
                 except name can be
         """
+        import GPy.kern
         if isinstance(kernel, str):
             if name is None:
                 name = "GPy - " + kernel
@@ -350,7 +347,7 @@ class RBF(Stationary):
         """
         squared exponential kernel
 
-        Inputs: (very much the same as in GPy.kern.RBF)
+        Inputs:
             n_dims : number of dimensions
             variance : kernel variance
             lengthscale : kernel lengthscale

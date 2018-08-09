@@ -3,11 +3,9 @@ Tools for exact GP inference on massive image, video, spatial-temporal, or multi
 
 # Installation & Setup
 Only python 2 is supported.
-An up-to-date Anaconda distribution is recommended in addition to the following non-standard dependencies (using `pip`):
-```
-pip install tabulate
-pip install GPy # v1.6.1 tested but other versions should work
-```
+We rely on numpy and scipy packages.
+Optionally, the lightweight `tabulate` package can be installed with `pip` which we use for printing.
+We also rely on the `GPy` package for testing, however, this is not required for regular use.
 
 # Tutorials (under construction...)
 * [Gaussian Process Inference on Full Grids](./tutorials/full_grid_tutorial.ipynb): This simple tutorial takes you though performing efficient Gaussian process inference on fully structure grids with no missing observations.
