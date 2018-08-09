@@ -1096,7 +1096,7 @@ class GPGappyRegression(GPGridRegression):
 
     def predict_grid(self,Xg_new,compute_var=None):
         if compute_var is not None:
-            raise NotImplementedError('see self.predict_cov')
+            raise ValueError('Use GPGappyRegression.predict_cov for posterior covariance computations')
         return super(GPGappyRegression, self).predict_grid(Xg_new,compute_var)
 
 

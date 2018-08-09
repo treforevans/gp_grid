@@ -43,7 +43,6 @@ def grid2mat(*xg):
 def nd_grid(*xg):
     """
     This mimics the behaviour of nd_grid in matlab.
-    (np.mgrid behaves similarly however I don't get how to call it clearly.)
     """
     grid_shape = [np.shape(xg1d)[0] for xg1d in xg] # shape of the grid
     d = np.size(grid_shape)
