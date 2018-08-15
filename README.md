@@ -12,7 +12,7 @@ Additional non-standard packages such as `GPy` are required for testing, however
 * [Gaussian Process Inference on Grids with Missing Observations](./tutorials/gappy_grid_tutorial.ipynb): This tutorial considers the general case where the input data is structured on a grid, however, some input response are missing. It will consider multi-output senarios as well as senarios where several input dimensions form a dimension of a grid.
 
 # Citation
-The underlying algorithms are based on the 2018 SDM paper:
+The underlying algorithms are based on the 2018 SDM paper (found [here](https://arxiv.org/abs/1808.03351)):
 ```
 @inproceedings{evans_gp_grid,
   title={Exploiting Structure for Fast Kernel Learning},
