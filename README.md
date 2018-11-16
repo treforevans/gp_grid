@@ -16,7 +16,7 @@ The underlying algorithms are based on the 2018 SDM paper (found [here](https://
 ```
 @inproceedings{evans_gp_grid,
   title={Exploiting Structure for Fast Kernel Learning},
-  author={Evans, Trefor W. and Prasanth B. Nair},
+  author={Evans, Trefor W and Nair, Prasanth B},
   booktitle={SIAM International Conference on Data Mining},
   year={2018},
   pages={414-422}
